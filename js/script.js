@@ -1,9 +1,91 @@
-'use strict'
+"use strict";
 
-var playerScore = 0;
-var compScore = 0;
-var score = [];
-var output = document.querySelector('#output p');
+var roundScore = [],
+playerWinCounter = 0,
+computerWinCounter = 0,
+rounds = 0,
+output = document.querySelector('#output p'),
+winInfoOutput = document.querySelector('#output p:nth-child(2)'),
+winConditionInfo = document.querySelector('#result p:nth-child(2)'),
+resultInfoOutput = document.querySelector('#result p:nth-child(1)'),
+controlButtons = document.querySelectorAll('.game-button'),
+newGameButton = document.querySelector('#new-game');
+
+newGameButton.addEventListener('click', newGame);
+
+function newGame() {
+	reset();
+	getRounds();
+	printRounds(rounds);
+	swapEvents(true);
+}
+
+function swapEvents(x) {
+	if(x) {
+		controlButtons.forEach(function(button) {
+			button.removeEventListener('click', gameOver);
+			button.addEventListener('click', playerMove);
+		});
+	} else {
+		controlButtons.forEach(function(button) {
+			button.removeEventListener('click', playerMove);
+			button.addEventListener('click', gameOver);
+		});
+	}
+}
+
+// function swapEvents(x) {
+// 	switch (x) {
+// 		case true:	controlButtons.forEach(function(button) {
+// 									button.removeEventListener('click', gameOver);
+// 									button.addEventListener('click', playerMove);
+// 								};
+// 		break;
+// 		default:		controlButtons.forEach(function(button) {
+// 									button.removeEventListener('click', playerMove);
+// 									button.addEventListener('click', gameOver);
+// 								};
+// 	}
+// }
+
+
+function reset() {
+	playerWinCounter = 0;
+	computerWinCounter = 0;
+	rounds = 0;
+	roundScore = [];
+	output.innerHTML = '';
+	winInfoOutput.innerHTML = '';
+	resultInfoOutput.innerHTML = '';
+}
+
+function getRounds() {
+	rounds = parseInt(window.prompt('Please enter number of rounds required to win game:'));
+
+	while((isNaN(rounds)) || (rounds <= 0)) {
+		rounds = parseInt(window.prompt('Only positive numbers accepted!'));
+	}
+}
+
+function printRounds(x) {
+	winConditionInfo.innerHTML = ('Win ' + x + (rounds > 1 ? ' rounds ' : ' round ') + 'to win entire game.');
+}
+
+function gameOver() {
+	winInfoOutput.insertAdjacentHTML('beforeend', '<br><span>Game over, please press the new game button!</span>');
+}
+
+function playerMove(event) {
+	var humanMove = event.target.name;
+	var computerMove = drawing();
+	roundScore = checkRoundScore(humanMove, computerMove);
+	printRoundScore(humanMove, computerMove);
+	countWinRounds(roundScore[1]);
+	if((playerWinCounter === rounds) || (computerWinCounter === rounds)) {
+		printWinInfo();
+		swapEvents(false);
+	}
+}
 
 function drawing() {
 	var result;
@@ -21,71 +103,70 @@ function drawing() {
 function checkRoundScore(x, y) {
 	// x - playerMove
 	// y - computerMove
-	// roundScore[0] = drawFlag t/f
-	// roundScore[1] = playerWinFlag t/f
+	// oneRoundScore[0] = drawFlag t/f
+	// oneRoundScore[1] = playerWinFlag t/f
 
-	var roundScore = new Array(2);
+	var oneRoundScore = new Array(2);
 
 	if(x === 'rock') {
 		switch (y) {
-			case 'rock': roundScore[0] = true;
+			case 'rock': oneRoundScore[0] = true;
 			console.log('kamien = kamien = remis');
 			break;
-			case 'paper': roundScore[1] = false;
-			compScore += 1;
+			case 'paper': oneRoundScore[1] = false;
 			console.log('kamien < papier = przegrana gracza');
 			break;
-			default: roundScore[1] = true;
-			playerScore += 1;
+			default: oneRoundScore[1] = true;
 			console.log('kamien > nozyce = wygrana gracza');
 		}
 	} else if (x === 'paper') {
 		switch (y) {
-			case 'rock': roundScore[1] = true;
-			playerScore += 1;
+			case 'rock': oneRoundScore[1] = true;
 			console.log('papier > kamien = wygrana gracza');
 			break;
-			case 'paper': roundScore[0] = true;
+			case 'paper': oneRoundScore[0] = true;
 			console.log('papier = papier = remis');
 			break;
-			default: roundScore[1] = false;
-			compScore += 1;
+			default: oneRoundScore[1] = false;
 			console.log('papier < nozyce = przegrana gracza');
 		}
 	} else if (x === 'scissors') {
 		switch (y) {
-			case 'rock': roundScore[1] = false;
-			compScore += 1;
+			case 'rock': oneRoundScore[1] = false;
 			console.log('nozyce < kamien = przegrana gracza');
 			break;
-			case 'paper': roundScore[1] = true;
-			playerScore += 1;
+			case 'paper': oneRoundScore[1] = true;
 			console.log('nozyce > papier = wygrana gracza');
 			break;
-			default: roundScore[0] = true;
+			default: oneRoundScore[0] = true;
 			console.log('nozyce = nozyce = remis');
 		}
 	}
 
-	return roundScore;
+	return oneRoundScore;
 }
 
 function printRoundScore(x, y) {
-	if(score[0]) {
-		output.innerHTML = ('DRAW ' + 'you played ' + x + ', computer played ' + y);
+	if(roundScore[0]) {
+		output.innerHTML = ('DRAW ' + 'you played ' + x + ', computer played ' + y + ' too.');
 	} else {
-		output.innerHTML = ('YOU ' + (score[1] ? 'WON ' : 'LOST ') + 'you played ' + x + ', computer played ' + y);
+		output.innerHTML = ('YOU ' + (roundScore[1] ? 'WON ' : 'LOST ') + 'you played ' + x + ', computer played ' + y + '.');
 	}
 }
 
-function playerMove(event) {
-	var move = event.target.name;
-	var compMove = drawing();
-	score = checkRoundScore(move, compMove);
-	printRoundScore(move, compMove);
+function countWinRounds(x) {
+	if(x) {
+		playerWinCounter += 1;
+	} else if(x === false) {
+		computerWinCounter += 1;
+	}
+	printRoundResult();
 }
 
-var buttons = document.querySelectorAll('button');
-buttons.forEach(function(button) {
-	button.addEventListener('click', playerMove);
-});
+function printRoundResult() {
+	resultInfoOutput.innerHTML = ('<h2>Player ' + playerWinCounter + ' vs ' + computerWinCounter + ' Computer</h2>' );
+}
+
+function printWinInfo() {
+	winInfoOutput.innerHTML = ('YOU ' + (roundScore[1] ? 'WON ' : 'LOST ') + 'THE ENTIRE GAME!!!');
+}
