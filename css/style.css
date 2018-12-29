@@ -24,3 +24,7 @@ body {
   background: lime;
   font-weight: bold;
 }
+#result p:nth-child(1) {
+  font-size: 25px;
+  font-weight: bold;
+}
