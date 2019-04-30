@@ -22,11 +22,12 @@
 		swapEvents(true);			//w zaleznosci od flagi (t/f) zmienia event podpiety pod buttony "kamien", "papier", "nozyce" pomiedzy playerMove() i gameOver()
 	}
 
-	function swapEvents(x) {
-		if(x) {
+	function swapEvents(flag) {
+		if(flag) {
 			controlButtons.forEach(function(button) {
 				button.removeEventListener('click', gameOver);
 				button.addEventListener('click', playerMove);
+				debugger;
 			});
 		} else {
 			controlButtons.forEach(function(button) {
@@ -35,22 +36,6 @@
 			});
 		}
 	}
-
-	//tu chcialem zrobic to samo co powyzej ale na switchu i sie nie udalo
-	// function swapEvents(x) {
-	// 	switch (x) {
-	// 		case true:	controlButtons.forEach(function(button) {
-	// 									button.removeEventListener('click', gameOver);
-	// 									button.addEventListener('click', playerMove);
-	// 								};
-	// 		break;
-	// 		default:		controlButtons.forEach(function(button) {
-	// 									button.removeEventListener('click', playerMove);
-	// 									button.addEventListener('click', gameOver);
-	// 								};
-	// 	}
-	// }
-
 
 	function reset() { //resetuje zawartosc zmiennych uzywanych przez logike gry
 		playerWinCounter = 0;
@@ -70,8 +55,8 @@
 		}
 	}
 
-	function printRounds(x) { //wyswietla podaną przez gracza liczbe rund na ekranie
-		winConditionInfo.innerHTML = ('Win ' + x + (rounds > 1 ? ' rounds ' : ' round ') + 'to win entire game.');
+	function printRounds(roundsNumber) { //wyswietla podaną przez gracza liczbe rund na ekranie
+		winConditionInfo.innerHTML = ('Win ' + roundsNumber + (rounds > 1 ? ' rounds ' : ' round ') + 'to win entire game.');
 	}
 
 	function gameOver() {  //wyswietla komunikat o zakonczeniu gry
@@ -80,7 +65,7 @@
 
 	function playerMove(event) {  //funkcja odpowiadajaca za rozgrywke
 		var humanMove = event.target.name;	//pobiera informace o ruchu gracza
-		var computerMove = drawing();				//"losuje" ruch kopmutera
+		var computerMove = compMove();				//"losuje" ruch kopmutera
 		roundScore = checkRoundScore(humanMove, computerMove); //ustala wynik rundy i zapisuje go do tablicy w formacie boolean z flagami t/f: roundScore[0] oznacza draw (t/f); roundScore[1] oznacza wygraną gracza (true) lub komputera (false)
 		printRoundScore(humanMove, computerMove);	//wyswietla komunikat kto wygral/remis i wyswietla kto zrobil jaki ruch w danej rundzie
 		countWinRounds(roundScore[1]); //zlicza wygrane i odpowiada za wyswietlenie ich na ekranie
@@ -90,7 +75,7 @@
 		}
 	}
 
-	function drawing() { //"losuje" ruch kopmutera
+	function compMove() { //"losuje" ruch komputera
 		var result;
 		switch (Math.round((Math.random()*2)+1)) { //konwertuje wylosowana liczbe do odpowiedniego stringa
 			case 1: result = 'rock';
@@ -103,32 +88,30 @@
 		return result;
 	}
 
-	function checkRoundScore(x, y) { //porownuje ruch gracza i komputera i ustala wynik rundy
-		// x - playerMove
-		// y - computerMove
+	function checkRoundScore(playerMove, computerMove) { //porownuje ruch gracza i komputera i ustala wynik rundy
 		// oneRoundScore[0] = drawFlag t/f
 		// oneRoundScore[1] = playerWinFlag t/f
 
 		var oneRoundScore = new Array(2);
 
-		if(x === 'rock') {
-			switch (y) {
+		if(playerMove === 'rock') {
+			switch (computerMove) {
 				case 'rock': oneRoundScore[0] = true;
 				break;
 				case 'paper': oneRoundScore[1] = false;
 				break;
 				default: oneRoundScore[1] = true;
 			}
-		} else if (x === 'paper') {
-			switch (y) {
+		} else if (playerMove === 'paper') {
+			switch (computerMove) {
 				case 'rock': oneRoundScore[1] = true;
 				break;
 				case 'paper': oneRoundScore[0] = true;
 				break;
 				default: oneRoundScore[1] = false;
 			}
-		} else if (x === 'scissors') {
-			switch (y) {
+		} else if (playerMove === 'scissors') {
+			switch (computerMove) {
 				case 'rock': oneRoundScore[1] = false;
 				break;
 				case 'paper': oneRoundScore[1] = true;
@@ -140,22 +123,20 @@
 		return oneRoundScore;
 	}
 
-	function printRoundScore(x, y) { //wyswietla komunikat kto wygral/remis i wyswietla kto zrobil jaki ruch w danej rundzie
-		// x - playerMove
-		// y - computerMove
+	function printRoundScore(playerMove, computerMove) { //wyswietla komunikat kto wygral/remis i wyswietla kto zrobil jaki ruch w danej rundzie
 		// roundScore[0] = drawFlag t/f
 		// roundScore[1] = playerWinFlag t/f
 		if(roundScore[0]) {
-			output.innerHTML = ('DRAW ' + 'you played ' + x + ', computer played ' + y + ' too.');
+			output.innerHTML = ('DRAW ' + 'you played ' + playerMove + ', computer played ' + computerMove + ' too.');
 		} else {
-			output.innerHTML = ('YOU ' + (roundScore[1] ? 'WON ' : 'LOST ') + 'you played ' + x + ', computer played ' + y + '.');
+			output.innerHTML = ('YOU ' + (roundScore[1] ? 'WON ' : 'LOST ') + 'you played ' + playerMove + ', computer played ' + computerMove + '.');
 		}
 	}
 
-	function countWinRounds(x) { //zlicza wygrane rundy
-		if(x) {
+	function countWinRounds(flag) { //zlicza wygrane rundy
+		if(flag) {
 			playerWinCounter += 1;
-		} else if(x === false) {
+		} else if(flag === false) {
 			computerWinCounter += 1;
 		}
 		printRoundResult();	//i wyswietla biezacy wynik rozgrywki
